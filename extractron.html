@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark">
+<html lang="pt-BR" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leitor de Documentos PDF</title>
-    <link rel="icon" type="image/svg+xml" href="../assets/favicons/extractron.svg">
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="../assets/script-shell.css">
+    <title>Extractron | Extração de documentos</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet" type="text/css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js"></script>
@@ -16,230 +15,308 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
-        .fade-in {
-            animation: fadeIn 0.4s ease;
-        }
-        
-        input[type="file"] {
-            display: none;
-        }
+
+        .fade-in { animation: fadeIn 0.18s ease; }
+        input[type="file"] { display: none; }
 
         body {
-            background: radial-gradient(circle at 20% 20%, rgba(99,102,241,0.06), transparent 25%),
-                        radial-gradient(circle at 80% 0%, rgba(16,185,129,0.08), transparent 25%),
-                        #0b1021;
-            color: #e5e7eb;
+            background: #f3f4f6;
+            color: #1f2937;
         }
 
         .dash-panel {
-            background: linear-gradient(135deg, rgba(24,26,31,0.96), rgba(17,20,26,0.94));
-            border: 1px solid rgba(255,255,255,0.06);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+            border-radius: 0.75rem !important;
         }
+
+        .dash-panel .text-white { color: #111827 !important; }
+        .dash-panel .text-slate-400 { color: #64748b !important; }
+        .dash-panel .text-cyan-200 { color: #2563eb !important; }
+        .dash-panel .bg-slate-800 { background: #e5e7eb !important; }
+        .dash-panel #dashProgressFill { background: #2563eb !important; }
 
         .stat-tile {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 12px;
-            padding: 12px;
             display: grid;
-            gap: 6px;
+            gap: 4px;
+            padding: 10px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.625rem;
+            background: #f8fafc;
         }
 
-        .stat-label { font-size: 11px; letter-spacing: .4px; text-transform: uppercase; opacity: .7; }
-        .stat-value { font-weight: 800; font-size: 18px; color: #a5f3fc; }
+        .stat-label {
+            font-size: 11px;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+
+        .stat-value {
+            color: #1d4ed8;
+            font-size: 18px;
+            font-weight: 800;
+        }
 
         .card {
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem !important;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06) !important;
         }
+
+        .step-number {
+            display: inline-grid;
+            width: 1.75rem;
+            height: 1.75rem;
+            place-items: center;
+            flex: 0 0 auto;
+            border-radius: 9999px;
+            background: #e0e7ff;
+            color: #3730a3;
+            font-size: 0.8rem;
+            font-weight: 800;
+        }
+
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+
+        .config-tabs > .tab {
+            margin-right: 0.35rem;
+            border-radius: 0.65rem 0.65rem 0 0;
+        }
+
+        .config-tabs > .tab:last-of-type { margin-right: 0; }
+
+        .action-button { min-height: 2.75rem; }
     </style>
 </head>
 <body class="min-h-screen bg-base-200">
-    <!-- Banner fixo para status de processamento -->
-    <div id="processingBanner" class="hidden fixed top-0 inset-x-0 z-50">
-        <div class="max-w-4xl mx-auto px-4 pt-3">
-            <div class="alert bg-base-100 shadow-2xl border border-base-300">
-                <span class="loading loading-spinner loading-md"></span>
-                <div>
-                    <h3 class="font-bold text-sm">Processando arquivos...</h3>
-                    <p id="processingText" class="text-xs opacity-80">Preparando...</p>
-                    <progress id="processingProgress" class="progress progress-primary w-full mt-2" value="0" max="100"></progress>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="container mx-auto max-w-7xl p-4 md:p-6 lg:p-8">
-        <div class="dash-panel rounded-2xl p-5 mb-4">
+    <main class="container mx-auto max-w-6xl space-y-4 p-4 md:p-6 lg:p-8">
+        <section id="processingDashboard" class="dash-panel hidden rounded-2xl p-5" aria-live="polite">
             <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
                     <p class="text-xs uppercase tracking-[0.25em] text-slate-400">Extractron</p>
-                    <h2 class="text-2xl font-bold text-white">Painel de Processamento</h2>
+                    <h1 class="text-2xl font-bold text-white">Extração de documentos</h1>
                     <p id="dashStatus" class="text-sm text-slate-400">Aguardando seleção de arquivos...</p>
                 </div>
-                <div class="flex gap-2 text-xs">
-                    <span class="badge badge-outline">PDF.js</span>
-                    <span class="badge badge-outline">Tesseract OCR</span>
-                    <span class="badge badge-outline">Lote &amp; Progresso</span>
-                </div>
+                <span class="badge badge-outline">Processamento local</span>
             </div>
-            <div class="mt-4">
-                <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-                    <div id="dashProgressFill" class="h-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-indigo-400" style="width:0%"></div>
+
+            <div class="mt-4" aria-label="Progresso do processamento">
+                <div class="h-2 w-full overflow-hidden rounded-full bg-slate-800">
+                    <div id="dashProgressFill" class="h-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-indigo-400 transition-all" style="width: 0%"></div>
                 </div>
-                <div class="flex justify-between text-xs text-slate-400 mt-1">
+                <div class="mt-1 flex justify-between text-xs text-slate-400">
                     <span id="dashPercent">0%</span>
                     <span id="dashCounts">0 / 0</span>
                 </div>
+                <div class="mt-2 text-xs text-slate-400">Tempo decorrido: <span id="dashElapsed" class="font-semibold text-cyan-200">00:00</span></div>
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-                <div class="stat-tile">
-                    <span class="stat-label">Total</span>
-                    <span id="statTotal" class="stat-value">0</span>
-                </div>
-                <div class="stat-tile">
-                    <span class="stat-label">Processados</span>
-                    <span id="statDone" class="stat-value">0</span>
-                </div>
-                <div class="stat-tile">
-                    <span class="stat-label">Pendentes</span>
-                    <span id="statPending" class="stat-value">0</span>
-                </div>
-                <div class="stat-tile">
-                    <span class="stat-label">Erros</span>
-                    <span id="statErrors" class="stat-value text-rose-300">0</span>
-                </div>
-            </div>
-        </div>
 
-        <div class="card bg-base-100 shadow-2xl fade-in">
-            <div class="card-body">
-                <h1 class="card-title text-3xl md:text-4xl font-bold mb-6 justify-center gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    Leitor de Documentos PDF
-                </h1>
-                
-                <!-- Configurar Campos Obrigatórios -->
-                <div class="card bg-base-200 mb-4">
-                    <div class="card-body">
-                        <h3 class="card-title text-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            Configurar Campos Obrigatórios
-                        </h3>
-                        <p class="text-sm opacity-70 mb-3">Marque os campos que devem estar presentes nos documentos:</p>
-                        <div class="alert alert-info mb-3 text-xs">
-                            Para tipo Diario Oficial: os campos Tipo de Edicao (01/02/03), Edicao, Data e Conteudo completo sao obrigatorios e validados automaticamente.
+            <div class="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+                <div class="stat-tile"><span class="stat-label">Total</span><span id="statTotal" class="stat-value">0</span></div>
+                <div class="stat-tile"><span class="stat-label">Processados</span><span id="statDone" class="stat-value">0</span></div>
+                <div class="stat-tile"><span class="stat-label">Pendentes</span><span id="statPending" class="stat-value">0</span></div>
+                <div class="stat-tile"><span class="stat-label">Erros</span><span id="statErrors" class="stat-value text-rose-300">0</span></div>
+            </div>
+        </section>
+
+        <section id="configurationCard" class="card bg-base-100 shadow-2xl fade-in">
+            <div class="card-body gap-6">
+                <header>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-primary">Configuração</p>
+                    <h2 class="mt-1 text-2xl font-bold">Configuração do processamento</h2>
+                    <p class="mt-1 text-sm opacity-70">Selecione o tipo de documento e os arquivos PDF.</p>
+                </header>
+
+                <div class="tabs tabs-lifted tabs-lg config-tabs" role="tablist" aria-label="Configurações do processamento">
+                    <input type="radio" name="config_tabs" role="tab" class="tab" aria-label="Processamento" checked>
+                    <div role="tabpanel" class="tab-content space-y-4 rounded-box border-base-300 bg-base-100 p-4">
+                <section aria-labelledby="etapa-tipo">
+                    <div class="mb-3 flex items-center gap-3">
+                        <span class="step-number">1</span>
+                        <div>
+                            <h3 id="etapa-tipo" class="font-semibold">Identifique o documento</h3>
+                            <p class="text-xs opacity-60">Escolha um tipo ou use a detecção automática.</p>
                         </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <label class="label cursor-pointer justify-start gap-3 bg-base-300 p-3 rounded-lg hover:bg-base-100 transition-all">
-                                <input type="checkbox" id="obrigatorio_numero" class="checkbox checkbox-primary" />
-                                <span class="label-text">Número do Documento</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="form-control">
+                            <label class="label" for="buscarDocumento">
+                                <span class="label-text font-semibold">Tipo de documento <span class="text-error">*</span></span>
                             </label>
-                            
-                            <label class="label cursor-pointer justify-start gap-3 bg-base-300 p-3 rounded-lg hover:bg-base-100 transition-all">
-                                <input checked type="checkbox" id="obrigatorio_data" class="checkbox checkbox-primary" />
+                            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                            <input type="search" id="buscarDocumento" placeholder="Busque por ID ou nome, por exemplo: Ata" class="input input-bordered w-full" autocomplete="off">
+                            <select id="select" class="select select-primary w-full" aria-label="Tipo de documento"></select>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <details class="rounded-xl border border-base-300 bg-base-200">
+                    <summary class="flex cursor-pointer items-center gap-3 p-4">
+                        <span class="step-number">2</span>
+                        <span class="flex-1">
+                            <span class="block font-semibold">Regras de validação</span>
+                            <span class="block text-xs opacity-60">Opcional · defina quais campos são obrigatórios na saída.</span>
+                        </span>
+                        <span class="text-xs opacity-60">Abrir</span>
+                    </summary>
+                    <div class="border-t border-base-300 p-4">
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <label class="label cursor-pointer justify-start gap-3 rounded-lg bg-base-300 p-3 hover:bg-base-100">
+                                <input type="checkbox" id="obrigatorio_numero" class="checkbox checkbox-primary">
+                                <span class="label-text">Número do documento</span>
+                            </label>
+                            <label class="label cursor-pointer justify-start gap-3 rounded-lg bg-base-300 p-3 hover:bg-base-100">
+                                <input checked type="checkbox" id="obrigatorio_data" class="checkbox checkbox-primary">
                                 <span class="label-text">Data</span>
                             </label>
-                            
-                            <label class="label cursor-pointer justify-start gap-3 bg-base-300 p-3 rounded-lg hover:bg-base-100 transition-all">
-                                <input checked type="checkbox" id="obrigatorio_descricao" class="checkbox checkbox-primary" />
+                            <label class="label cursor-pointer justify-start gap-3 rounded-lg bg-base-300 p-3 hover:bg-base-100">
+                                <input checked type="checkbox" id="obrigatorio_descricao" class="checkbox checkbox-primary">
                                 <span class="label-text">Descrição</span>
                             </label>
-                            
-                            <label class="label cursor-pointer justify-start gap-3 bg-base-300 p-3 rounded-lg hover:bg-base-100 transition-all">
-                                <input checked type="checkbox" id="obrigatorio_arquivo" class="checkbox checkbox-primary" />
+                            <label class="label cursor-pointer justify-start gap-3 rounded-lg bg-base-300 p-3 hover:bg-base-100">
+                                <input checked type="checkbox" id="obrigatorio_arquivo" class="checkbox checkbox-primary">
                                 <span class="label-text">Arquivo</span>
                             </label>
-
-                            <label class="label cursor-pointer justify-start gap-3 bg-base-300 p-3 rounded-lg hover:bg-base-100 transition-all">
-                                <input checked type="checkbox" id="obrigatorio_letra" class="checkbox checkbox-primary" />
+                            <label class="label cursor-pointer justify-start gap-3 rounded-lg bg-base-300 p-3 hover:bg-base-100 sm:col-span-2">
+                                <input checked type="checkbox" id="obrigatorio_letra" class="checkbox checkbox-primary">
                                 <span class="label-text">Letra</span>
                             </label>
                         </div>
                     </div>
-                </div>
-                
-                <!-- ID de Documentação -->
-                <div class="form-control mb-4">
-                    <label class="label" for="numeroDoDocumento">
-                        <span class="label-text font-semibold flex items-center gap-2">
-                            <span class="badge badge-error badge-sm"></span>
-                            ID de Documentação (Obrigatório)
+                </details>
+
+                <details class="rounded-xl border border-base-300 bg-base-200">
+                    <summary class="flex cursor-pointer items-center gap-3 p-4">
+                        <span class="step-number">3</span>
+                        <span class="flex-1">
+                            <span class="block font-semibold">Desempenho</span>
+                            <span class="block text-xs opacity-60">Opcional · ajuste a quantidade de PDFs processados em paralelo.</span>
                         </span>
-                    </label>
-                    <input type="text" id="buscarDocumento" placeholder="Busque por ID ou nome do documento"
-                           class="input input-bordered mb-2" autocomplete="off" />
-                    <select id="select" class="select select-primary">
-                    </select>
-                    <label class="label">
-                        <span class="label-text-alt opacity-70">Digite o ID (ex: 401) ou o nome (ex: Ata) para filtrar e selecionar.</span>
-                    </label>
-                </div>
-                
-                <!-- URL Base -->
-                <div class="form-control mb-6">
-                    <label class="label" for="urlDocumentos">
-                        <span class="label-text font-semibold flex items-center gap-2">
-                            <span class="badge badge-error badge-sm"></span>
-                            URL Base dos Documentos (Obrigatório)
-                        </span>
-                    </label>
-                    <input type="text" id="urlDocumentos" placeholder="Ex: https://seu-servidor.com/documentos/" 
-                           class="input input-bordered w-full" required />
-                    <label class="label">
-                        <span class="label-text-alt opacity-70">Este campo é obrigatório. Use com barra no final (ex: .../documentos/).</span>
-                    </label>
-                </div>
-                
-                <div class="divider"></div>
-                
-                <div class="card bg-base-200 mb-4">
-                    <div class="card-body">
-                        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                            <div>
-                                <h3 class="card-title text-sm">Concorrência do processamento</h3>
-                                <p class="text-sm opacity-70">Defina quantos PDFs serão processados em paralelo por lote.</p>
-                            </div>
-                            <div class="badge badge-primary badge-outline">Lote atual: <span id="batchSizeValue" class="ml-1 font-bold">50</span></div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-[1fr_120px] gap-4 items-center">
-                            <div>
-                                <input type="range" id="batchSizeRange" min="1" max="100" value="50" class="range range-primary" />
-                                <div class="w-full flex justify-between text-xs px-2 mt-2 opacity-60">
-                                    <span>1</span>
-                                    <span>25</span>
-                                    <span>50</span>
-                                    <span>75</span>
-                                    <span>100</span>
-                                </div>
-                            </div>
-                            <label class="form-control">
-                                <span class="label-text text-xs opacity-70 mb-1">Arquivos por lote</span>
-                                <input type="number" id="batchSizeInput" min="1" max="100" value="50" class="input input-bordered input-primary w-full" />
-                            </label>
+                        <span class="badge badge-primary badge-outline"><span id="batchSizeValue">50</span><span class="ml-1">por lote</span></span>
+                    </summary>
+                    <div class="border-t border-base-300 p-4">
+                        <label class="form-control max-w-xs" for="batchSizeInput">
+                            <span class="label-text mb-1 text-xs opacity-70">Arquivos por lote</span>
+                            <input type="number" id="batchSizeInput" min="1" max="100" value="50" class="input input-bordered input-primary w-full">
+                        </label>
+                        <p class="mt-2 text-xs opacity-60">Use um valor menor em dispositivos com pouca memória.</p>
+                    </div>
+                </details>
+
+                <section aria-labelledby="etapa-arquivos" class="rounded-xl border border-primary/30 bg-primary/5 p-4">
+                    <div class="mb-3 flex items-center gap-3">
+                        <span class="step-number">4</span>
+                        <div>
+                            <h3 id="etapa-arquivos" class="font-semibold">Selecione os arquivos</h3>
+                            <p class="text-xs opacity-60">PDFs duplicados serão identificados automaticamente.</p>
                         </div>
                     </div>
+                    <input type="file" id="pdfInput" accept=".pdf,application/pdf" multiple>
+                    <button type="button" class="btn btn-primary action-button w-full gap-2" onclick="document.getElementById('pdfInput').click()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                        </svg>
+                        Selecionar arquivos PDF
+                    </button>
+                </section>
+                    </div>
+
+                    <input type="radio" name="config_tabs" role="tab" class="tab" aria-label="Integração e links">
+                    <div role="tabpanel" class="tab-content rounded-box border-base-300 bg-base-100 p-4">
+                        <section aria-labelledby="etapa-integracao" class="rounded-xl border border-base-300 bg-base-200 p-4">
+                            <div class="mb-4 flex items-center gap-3">
+                                <span class="step-number">↗</span>
+                                <div>
+                                    <h3 id="etapa-integracao" class="font-semibold">Integração com servidor ou banco</h3>
+                                    <p class="text-xs opacity-60">Opcional · use esta configuração somente quando o JSON precisar apontar para documentos externos.</p>
+                                </div>
+                            </div>
+                            <div class="form-control">
+                                <label class="label" for="urlDocumentos">
+                                    <span class="label-text font-semibold">URL base dos documentos</span>
+                                </label>
+                                <input type="url" id="urlDocumentos" placeholder="https://servidor.com/documentos/" class="input input-bordered w-full" autocomplete="url">
+                                <span class="label-text-alt mt-2 text-xs opacity-60">Informe a URL terminando com “/”. Se ficar vazio, o JSON usará apenas o nome do arquivo.</span>
+                            </div>
+                        </section>
+                    </div>
                 </div>
-                
-                <p class="text-center text-sm opacity-70 mb-4">Selecione os arquivos PDF para extrair as informações</p>
-                <input type="file" id="pdfInput" accept=".pdf" multiple />
-                <button class="btn btn-primary btn-lg w-full gap-2" onclick="document.getElementById('pdfInput').click()">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                    </svg>
-                    Selecionar PDFs
-                </button>
             </div>
-        </div>
-    </div>
-    
-    <div id="results" class="container mx-auto max-w-7xl p-4 md:p-6 lg:p-8"></div>
+        </section>
+
+        <dialog id="configModal" class="modal">
+            <div class="modal-box max-w-2xl">
+                <form method="dialog">
+                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Fechar">✕</button>
+                </form>
+                <p class="text-xs font-semibold uppercase tracking-wider text-primary">Resumo</p>
+                <h2 class="mt-1 text-2xl font-bold">Configuração do processamento</h2>
+                <p class="mt-1 text-sm opacity-70">Valores utilizados na última execução.</p>
+
+                <dl class="mt-6 divide-y divide-base-300 rounded-xl border border-base-300 bg-base-200">
+                    <div class="grid gap-1 p-4 sm:grid-cols-[12rem_1fr] sm:gap-4">
+                        <dt class="text-sm opacity-60">Tipo de documento</dt>
+                        <dd id="configSummaryType" class="font-medium">—</dd>
+                    </div>
+                    <div class="grid gap-1 p-4 sm:grid-cols-[12rem_1fr] sm:gap-4">
+                        <dt class="text-sm opacity-60">URL base</dt>
+                        <dd id="configSummaryUrl" class="break-all font-medium">Não informada</dd>
+                    </div>
+                    <div class="grid gap-1 p-4 sm:grid-cols-[12rem_1fr] sm:gap-4">
+                        <dt class="text-sm opacity-60">Arquivos por lote</dt>
+                        <dd id="configSummaryBatch" class="font-medium">—</dd>
+                    </div>
+                    <div class="grid gap-1 p-4 sm:grid-cols-[12rem_1fr] sm:gap-4">
+                        <dt class="text-sm opacity-60">Campos obrigatórios</dt>
+                        <dd id="configSummaryRules" class="font-medium">—</dd>
+                    </div>
+                </dl>
+                <div class="modal-action">
+                    <form method="dialog"><button class="btn">Fechar</button></form>
+                </div>
+            </div>
+            <form method="dialog" class="modal-backdrop"><button>fechar</button></form>
+        </dialog>
+
+        <dialog id="duplicateModal" class="modal">
+            <div class="modal-box max-w-2xl">
+                <form method="dialog">
+                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Fechar">✕</button>
+                </form>
+                <p class="text-xs font-semibold uppercase tracking-wider text-warning">Duplicidade</p>
+                <h2 id="duplicateModalTitle" class="mt-1 text-2xl font-bold">Documentos relacionados</h2>
+                <p id="duplicateModalDescription" class="mt-1 text-sm opacity-70"></p>
+                <div id="duplicateModalContent" class="mt-5 space-y-3"></div>
+                <div class="modal-action">
+                    <form method="dialog"><button class="btn">Fechar</button></form>
+                </div>
+            </div>
+            <form method="dialog" class="modal-backdrop"><button>fechar</button></form>
+        </dialog>
+
+        <section id="liveErrors" class="hidden space-y-3" aria-live="polite" aria-atomic="false">
+            <div class="card border border-error/40 bg-error/5 shadow-md">
+                <div class="card-body p-4">
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <h2 class="card-title text-base text-error">Ocorrências durante o processamento</h2>
+                            <p class="text-xs opacity-70">Os erros aparecem conforme cada arquivo é concluído.</p>
+                        </div>
+                        <span id="liveErrorsCount" class="badge badge-error">0</span>
+                    </div>
+                    <div id="liveErrorsList" class="max-h-64 space-y-2 overflow-y-auto"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="results" class="space-y-4" aria-live="polite"></section>
+    </main>
+
     <script src="js/extractron/processamento/normalizacao.js"></script>
     <script src="js/extractron/extratores/extratores-base.js"></script>
     <script src="js/extractron/processamento/validacao-saida.js"></script>
@@ -252,6 +329,5 @@
     <script src="js/extractron/extratores/extratores-administrativos.js"></script>
     <script src="js/extractron/controle/orquestrador.js"></script>
     <script src="js/interface.js"></script>
-    <script src="../assets/script-shell.js"></script>
 </body>
 </html>

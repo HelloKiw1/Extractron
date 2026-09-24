@@ -250,8 +250,6 @@
             };
         }
         
-        let ultimoPayloadDuplicados = [];
-
         function mapearDocumentoDuplicadoParaPayload(doc, configuracaoSaida) {
             let tipoDocumentoId = configuracaoSaida?.tipoDocumentoId ?? null;
             const tipoDocumentoIdNumero = Number(tipoDocumentoId);
@@ -283,17 +281,7 @@
             setTimeout(() => URL.revokeObjectURL(a.href), 1000);
         }
 
-        function baixarDuplicadosJson() {
-            if (!ultimoPayloadDuplicados.length) {
-                alert('Nenhum documento duplicado encontrado.');
-                return;
-            }
-
-            baixarJson('duplicados.json', ultimoPayloadDuplicados);
-        }
-
         function downloadArquivos(documentosValidos, documentosFalhos, configuracaoSaida, documentosDuplicados = []) {
-            let mensagem = '💾 Os arquivos JSON foram baixados automaticamente:\n\n';
             const payloadValidos = documentosValidos
                 .filter((doc) => !doc?.motivos_falha?.length && !doc?.erro)
                 .map((doc) => mapearDocumentoParaPayload(doc, configuracaoSaida));
@@ -303,34 +291,42 @@
                 arquivo_original: doc.arquivo || null,
                 erro: doc.erro || null
             }));
-            ultimoPayloadDuplicados = documentosDuplicados.map((doc) => mapearDocumentoDuplicadoParaPayload(doc, configuracaoSaida));
-            
-            // Download do arquivo com documentos válidos
+            const payloadDuplicados = documentosDuplicados.map((doc) => mapearDocumentoDuplicadoParaPayload(doc, configuracaoSaida));
+            const downloadsDisponiveis = [];
+
             if (payloadValidos.length > 0) {
-                const fileValidos = new Blob([JSON.stringify(payloadValidos, null, 2)], { type: 'application/json' });
-                const aValidos = document.createElement('a');
-                aValidos.href = URL.createObjectURL(fileValidos);
-                aValidos.download = 'informações_extraidos.json';
-                aValidos.click();
-                mensagem += '✅ informações_extraidos.json (documentos válidos)\n';
+                downloadsDisponiveis.push({
+                    id: 'validos',
+                    titulo: 'Documentos válidos',
+                    nomeArquivo: 'informações_extraidos.json',
+                    quantidade: payloadValidos.length,
+                    payload: payloadValidos
+                });
             }
-            
-            // Download do arquivo com documentos com falhas (se houver)
+
             if (payloadFalhos.length > 0) {
-                const fileFalhos = new Blob([JSON.stringify(payloadFalhos, null, 2)], { type: 'application/json' });
-                const aFalhos = document.createElement('a');
-                aFalhos.href = URL.createObjectURL(fileFalhos);
-                aFalhos.download = 'falha.json';
-                
-                // Aguardar um pouco para não fazer download simultâneo
-                setTimeout(() => {
-                    aFalhos.click();
-                }, 300);
-                mensagem += '❌ falha.json (documentos com falhas)\n';
+                downloadsDisponiveis.push({
+                    id: 'falhas',
+                    titulo: 'Documentos com falhas',
+                    nomeArquivo: 'falha.json',
+                    quantidade: payloadFalhos.length,
+                    payload: payloadFalhos
+                });
             }
-            
-            // Mostrar pop-up de confirmação
-            alert(mensagem);
+
+            if (payloadDuplicados.length > 0) {
+                downloadsDisponiveis.push({
+                    id: 'duplicados',
+                    titulo: 'Documentos duplicados',
+                    nomeArquivo: 'duplicados.json',
+                    quantidade: payloadDuplicados.length,
+                    payload: payloadDuplicados
+                });
+            }
+
+            window.extractronDownloads = downloadsDisponiveis;
+            // Os arquivos ficam disponíveis na tabela lateral e só são baixados após o clique.
+            return downloadsDisponiveis;
         }
 
         // Tenta detectar o tipo do documento pelo nome do arquivo antes de ler o conteúdo.

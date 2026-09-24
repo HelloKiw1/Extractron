@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title>Documento</title>
+  <path d="M17 6h22l11 11v41H17z" fill="#ffffff" stroke="#334155" stroke-linejoin="round" stroke-width="3"/>
+  <path d="M39 6v12h11" fill="#dbeafe" stroke="#334155" stroke-linejoin="round" stroke-width="3"/>
+  <path d="M25 31h17M25 40h17M25 49h11" fill="none" stroke="#2563eb" stroke-linecap="round" stroke-width="3"/>
+</svg>
