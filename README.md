@@ -1,86 +1,129 @@
-# EXTRACTRON - Extrator de Decretos PDF
+# Extractron
 
-Sistema de extração automática de dados de decretos municipais a partir de arquivos PDF, utilizando análise de texto nativo e OCR como fallback.
+Sistema web para extração automatizada de informações em documentos PDF. O Extractron foi desenvolvido para auxiliar o processamento de documentos administrativos e atos oficiais, convertendo dados não estruturados em informações organizadas no formato JSON.
 
-## Descrição
+## Objetivo
 
+O sistema reduz o trabalho manual de leitura e digitação de documentos. Ele identifica informações relevantes, como número, ano, data, letra identificadora e descrição, de acordo com o tipo de documento processado.
 
 ## Funcionalidades
 
-- **Painel estilo Baixatron**: Dashboard fixo no topo com status, barra de progresso e estatísticas (total, processados, pendentes, erros)
-- **Extração de Texto Nativo**: Utiliza PDF.js para ler PDFs com texto selecionável
-- **OCR Integrado**: Tesseract.js processa automaticamente PDFs digitalizados quando necessário
-- **Processamento em Lote**: Arraste múltiplos arquivos PDF para processamento paralelo
-- **Detecção Automática**: Identifica o tipo de PDF e seleciona o método de extração adequado
-- **Exportação JSON**: Gera arquivo estruturado pronto para importação em sistemas
-- **Interface Intuitiva**: Drag-and-drop com feedback visual de progresso (banner fixo + painel)
+- Processamento de vários arquivos PDF em lotes;
+- Interface com seleção de arquivos e recurso de arrastar e soltar;
+- Extração de texto nativo de PDFs;
+- OCR para documentos digitalizados;
+- Identificação automática do tipo de documento;
+- Extratores específicos para decretos, leis, portarias, projetos de lei e outros documentos administrativos;
+- Normalização de textos, datas e nomes de arquivos;
+- Validação dos campos obrigatórios;
+- Indicadores de progresso, arquivos processados, pendentes e com erro;
+- Exportação dos dados extraídos em arquivos JSON;
+- Processamento local no navegador, sem necessidade de servidor próprio.
 
-## Tecnologias Utilizadas
+## Como utilizar
 
-- **PDF.js v3.11.174**: Biblioteca para parsing de arquivos PDF
-- **Tesseract.js v5.0.4**: Engine de OCR para documentos digitalizados
-- **HTML5 File API**: Manipulação de arquivos local sem necessidade de backend
+1. Abra o arquivo `extractron.html` em um navegador moderno.
+2. Selecione os tipos de documentos que serão processados.
+3. Arraste os arquivos PDF para a área indicada ou clique para selecioná-los.
+4. Configure, se necessário, a quantidade de arquivos processados por lote.
+5. Aguarde o término da extração.
+6. Baixe o arquivo JSON com os dados estruturados.
 
-## Estrutura de Dados Extraídos
+## Fluxo de processamento
 
-Cada decreto processado gera um objeto JSON com os seguintes campos:
+```text
+PDF → Leitura de texto ou OCR → Identificação do documento
+    → Extração dos campos → Normalização e validação → JSON
+```
+
+Quando o PDF possui texto selecionável, o sistema utiliza a extração nativa. Caso o documento seja digitalizado, o Extractron utiliza OCR para reconhecer os caracteres presentes nas páginas.
+
+## Tipos de documentos
+
+O catálogo do sistema pode incluir diferentes tipos documentais, entre eles:
+
+- Decretos;
+- Leis;
+- Portarias;
+- Projetos de lei;
+- Resoluções;
+- Requerimentos;
+- Ofícios;
+- Declarações;
+- Atas;
+- Diários oficiais;
+- Documentos administrativos e outros tipos configurados no sistema.
+
+## Exemplo de saída
 
 ```json
 {
   "numero": "001/2024",
   "data": "01/01/2024",
   "letra": "A",
-  "descricao": "Dispõe sobre...",
+  "descricao": "Dispõe sobre a organização administrativa",
   "arquivo": "decreto_001_2024.pdf"
 }
 ```
 
-## Uso
+Os campos podem variar conforme o tipo de documento selecionado e as regras de extração configuradas.
 
-1. Abra o arquivo `extractron.html` em um navegador moderno
-2. Arraste os arquivos PDF para a área indicada ou clique para selecionar
-3. Aguarde o processamento automático
-4. Clique em "Baixar JSON" para obter o arquivo de dados
+## Tecnologias utilizadas
 
-## Fluxo de Trabalho Recomendado
+- HTML5, CSS e JavaScript;
+- PDF.js, para leitura de arquivos PDF;
+- Tesseract.js, para reconhecimento óptico de caracteres (OCR);
+- HTML5 File API, para manipulação local dos arquivos;
+- JSON, para organização e exportação dos dados.
 
-EXTRACTRON funciona em conjunto com **FORMTRON** para automação completa:
+As bibliotecas principais são carregadas por CDN, portanto o projeto não exige instalação de dependências para ser executado no navegador.
 
+## Estrutura do projeto
+
+```text
+extractron.html                    Interface principal
+js/interface.js                    Controle da interface
+js/tiposDeDocumentos.js            Catálogo de tipos documentais
+js/extractron/processamento/       Normalização e validação dos dados
+js/extractron/leitura/             Leitura de PDF e acionamento do OCR
+js/extractron/extratores/          Regras específicas por tipo de documento
+js/extractron/controle/            Coordenação do processo de extração
 ```
-PDF → EXTRACTRON → JSON → FORMTRON → Sistema
+
+## Integração com outros sistemas
+
+O JSON gerado pode ser consumido por outros sistemas, como o FORMTRON, permitindo automatizar o preenchimento de formulários e a inserção dos dados em plataformas web.
+
+```text
+PDF → Extractron → JSON → Formtron → Sistema institucional
 ```
 
-1. EXTRACTRON extrai dados dos PDFs
-2. Exporta JSON com informações estruturadas
-3. FORMTRON lê o JSON e preenche formulários web automaticamente
+## Aplicação como tema de TCC
 
-## Padrões de Extração
+O Extractron pode ser utilizado como tema de Trabalho de Conclusão de Curso por envolver desenvolvimento web, processamento de documentos, OCR, automação de processos e organização de dados.
 
-O sistema utiliza expressões regulares otimizadas para identificar:
+Uma sugestão de título é:
 
-- **Número do Decreto**: Padrões como "Decreto nº 001/2024", "Dec. 001-2024"
-- **Data**: Formatos DD/MM/AAAA, DD.MM.AAAA, extenso
-- **Letra Identificadora**: Caracteres únicos (A-Z) associados ao decreto
-- **Descrição**: Primeira ocorrência de "Dispõe sobre", "Estabelece", "Autoriza"
+> Desenvolvimento de um sistema web para extração automatizada de informações em documentos PDF utilizando processamento de texto e OCR
 
-## Limitações Conhecidas
+O trabalho pode avaliar a precisão da extração, o tempo de processamento, o desempenho do OCR e as limitações causadas por diferentes formatos e qualidades de digitalização.
 
-- OCR requer tempo de processamento adicional (5-15s por página)
-- PDFs/etapas que demorarem demais podem ser interrompidos por timeout (3 min por arquivo; OCR/página com limite) e o arquivo vai para `falha.json`
-- Qualidade da digitalização afeta precisão do OCR
-- PDFs com layout não-padrão podem necessitar ajuste manual
-- Processamento local limitado pela memória do navegador
+## Limitações
+
+- O OCR pode exigir mais tempo de processamento, especialmente em documentos com muitas páginas.
+- A qualidade da digitalização influencia diretamente a precisão do reconhecimento.
+- Documentos com layouts muito diferentes podem exigir novas regras de extração.
+- O processamento local depende da memória e do desempenho do navegador.
+- Arquivos que ultrapassarem os limites de processamento podem ser encaminhados para um arquivo de falhas.
 
 ## Compatibilidade
 
-- Chrome/Edge 90+
-- Firefox 88+
-- Safari 14+
+O Extractron foi planejado para navegadores modernos, como:
 
-## Estrutura de Arquivos
+- Google Chrome e Microsoft Edge;
+- Mozilla Firefox;
+- Safari.
 
-```
-extractron.html    - Interface principal
-```
+## Licença
 
-Ferramenta standalone, sem dependências externas (bibliotecas carregadas via CDN).
+Nenhuma licença específica foi definida neste repositório. Consulte o responsável pelo projeto antes de distribuir ou reutilizar o código.
