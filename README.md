@@ -38,6 +38,48 @@ PDF → Leitura de texto ou OCR → Identificação do documento
 
 Quando o PDF possui texto selecionável, o sistema utiliza a extração nativa. Caso o documento seja digitalizado, o Extractron utiliza OCR para reconhecer os caracteres presentes nas páginas.
 
+## Mapa de funcionamento
+
+O processamento começa no navegador e permanece no ambiente local. O usuário fornece os PDFs, e o sistema percorre cada arquivo em lotes, identifica o tipo documental, extrai os campos e disponibiliza os resultados para download.
+
+```mermaid
+flowchart TD
+    A[Usuário abre extractron.html] --> B[Seleciona tipo, URL e arquivos PDF]
+    B --> C[interface.js]
+    C --> D[Remove arquivos duplicados]
+    D --> E[Divide os arquivos em lotes]
+    E --> F[processarPDF]
+    F --> G{Texto nativo suficiente?}
+    G -->|Sim| H[Usa texto extraído pelo PDF.js]
+    G -->|Não| I[Executa OCR com Tesseract.js]
+    H --> J[Identifica o tipo do documento]
+    I --> J
+    J --> K[Seleciona o extrator adequado]
+    K --> L[Extrai número, data, letra e descrição]
+    L --> M[Normaliza e valida os dados]
+    M --> N{Resultado}
+    N -->|Válido| O[Exibe e exporta JSON]
+    N -->|Falha| P[Exibe erro e exporta falha.json]
+    N -->|Duplicado| Q[Exibe e exporta duplicados.json]
+```
+
+### Rota de uma requisição de processamento
+
+```text
+extractron.html
+  → interface.js
+  → processarArquivosEmLotes()
+  → processarPDF()
+  → PDF.js ou Tesseract.js
+  → extrairInformacoes()
+  → extrator específico
+  → validarDocumentos()
+  → downloadArquivos()
+  → informações_extraidos.json / falha.json / duplicados.json
+```
+
+O fluxo não depende de servidor de aplicação: as bibliotecas são carregadas por CDN, os PDFs são lidos pela File API do navegador e os arquivos JSON são gerados localmente.
+
 ## Tipos de documentos
 
 O catálogo do sistema pode incluir diferentes tipos documentais, entre eles:

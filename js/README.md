@@ -89,6 +89,71 @@ PDF
   → geração do JSON
 ```
 
+## Mapa de funcionamento
+
+```mermaid
+flowchart TD
+    A[interface.js: seleção dos arquivos] --> B[Separação de duplicados]
+    B --> C[Processamento em lotes]
+    C --> D[leitura-pdf.js: processarPDF]
+    D --> E{Texto nativo suficiente?}
+    E -->|Sim| F[Texto do PDF.js]
+    E -->|Não| G[OCR do Tesseract.js]
+    F --> H[controle/orquestrador.js]
+    G --> H
+    H --> I{Tipo documental identificado}
+    I --> J[extratores-base.js]
+    I --> K[extratores-especiais.js]
+    I --> L[Extratores específicos]
+    J --> M[Resultado bruto]
+    K --> M
+    L --> M
+    M --> N[processamento/normalizacao.js]
+    N --> O[processamento/validacao-saida.js]
+    O --> P[Resultados na interface]
+    O --> Q[Arquivos JSON para download]
+```
+
+## Rota arquitetural
+
+```mermaid
+flowchart LR
+    A[extractron.html] --> B[Dependências CDN]
+    A --> C[tiposDeDocumentos.js]
+    A --> D[interface.js]
+    C --> D
+    D --> E[leitura/leitura-pdf.js]
+    E --> F[controle/orquestrador.js]
+    C --> F
+    F --> G[extratores/]
+    F --> H[processamento/normalizacao.js]
+    G --> H
+    H --> I[Resultado da extração]
+    I --> J[processamento/validacao-saida.js]
+    J --> D
+    J --> K[JSON válido, falhas e duplicados]
+```
+
+### Caminho entre os módulos
+
+1. [`extractron.html`](../extractron.html) carrega PDF.js, Tesseract.js e os scripts locais.
+2. [`tiposDeDocumentos.js`](tiposDeDocumentos.js) publica `window.tiposDeDocumentos`, usado na seleção e na identificação dos tipos.
+3. [`interface.js`](interface.js) recebe os arquivos, valida os campos da tela, remove duplicados e controla os lotes.
+4. [`leitura-pdf.js`](extractron/leitura/leitura-pdf.js) lê as páginas com PDF.js e usa OCR quando o texto nativo é insuficiente.
+5. [`orquestrador.js`](extractron/controle/orquestrador.js) combina tipo selecionado, nome do arquivo, URL e conteúdo para escolher a regra de extração.
+6. Os arquivos em [`extratores/`](extractron/extratores/) extraem os campos específicos de cada documento.
+7. [`normalizacao.js`](extractron/processamento/normalizacao.js) padroniza textos, datas, nomes e tipos identificados.
+8. [`validacao-saida.js`](extractron/processamento/validacao-saida.js) separa documentos válidos, falhos e duplicados e gera os arquivos JSON.
+9. [`interface.js`](interface.js) apresenta os resultados, o progresso e as mensagens de erro ao usuário.
+
+### Rotas de saída
+
+```text
+Resultado válido   → informações_extraidos.json
+Documento com erro → falha.json
+Documento duplicado → duplicados.json
+```
+
 ## Ordem de carregamento
 
 Os scripts locais são carregados pelo [`extractron.html`](../extractron.html) na seguinte ordem:
