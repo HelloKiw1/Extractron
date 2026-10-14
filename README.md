@@ -1,5 +1,9 @@
 # Extractron
 
+**Sistema online:** https://HelloKiw1.github.io/Extractron/
+
+**Guia de uso:** https://HelloKiw1.github.io/Extractron/como-usar.html
+
 Sistema web para extração automatizada de informações em documentos PDF. O Extractron foi desenvolvido para auxiliar o processamento de documentos administrativos e atos oficiais, convertendo dados não estruturados em informações organizadas no formato JSON.
 
 ## Objetivo

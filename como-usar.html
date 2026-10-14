@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Aprenda a extrair informações de PDFs e exportar JSON com o Extractron.">
+  <title>Como usar | Extractron</title>
+  <link rel="icon" href="favicon.svg">
+  <style>
+    :root{color-scheme:dark;font-family:system-ui,sans-serif;background:#11161b;color:#e5e7eb;line-height:1.7}
+    body{margin:0}main{max-width:850px;margin:auto;padding:24px}nav{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+    a{color:#67e8f9;text-underline-offset:4px}a:focus-visible{outline:3px solid #67e8f9;outline-offset:5px}
+    .button{display:inline-block;background:#67e8f9;color:#11161b;padding:10px 18px;border-radius:9px;font-weight:700;text-decoration:none}
+    header{padding:40px 0 24px}h1{font-size:clamp(2rem,6vw,3.2rem);line-height:1.15;margin:12px 0}h2{line-height:1.3;font-size:1.3rem}h3{font-size:1rem}p{margin:12px 0}
+    .label{color:#67e8f9;letter-spacing:.12em;font-size:.8rem;text-transform:uppercase}section{padding:20px 24px;border:1px solid #29313a;background:#151b21;border-radius:12px;margin:16px 0}
+    code{overflow-wrap:anywhere;background:#232d37;padding:2px 5px;border-radius:4px}li{margin:9px 0}footer{padding:24px 0;color:#aab6c4} .muted{color:#aab6c4}
+    @media(max-width:480px){main{padding:16px}section{padding:16px}}
+  </style>
+</head>
+<body>
+<main>
+  <nav aria-label="Navegação principal"><a href="extractron.html">Extractron</a><a class="button" href="extractron.html">Abrir o sistema →</a></nav>
+  <header><span class="label">Guia de uso</span><h1>Do PDF ao JSON,<br>passo a passo.</h1><p class="muted">Extraia informações de documentos administrativos usando o seu navegador. Comece com poucos arquivos para conferir os resultados.</p></header>
+  <section aria-labelledby="antes"><h2 id="antes">Antes de começar</h2><p>Tenha os arquivos PDF salvos no computador e mantenha a conexão com a internet para carregar as bibliotecas e os recursos de OCR. Use um navegador atualizado.</p><p>Os PDFs são processados localmente no navegador. A hospedagem no GitHub Pages disponibiliza o sistema; os documentos selecionados não são enviados ao GitHub.</p></section>
+  <section aria-labelledby="passos"><h2 id="passos">Faça a primeira extração</h2><ol>
+    <li><strong>Escolha o tipo de documento.</strong> Na configuração do processamento, selecione o tipo correspondente, como lei, decreto ou portaria. Use a detecção automática se não souber o tipo ou tiver documentos variados.</li>
+    <li><strong>Confira as regras de saída.</strong> Ajuste os campos obrigatórios conforme a sua necessidade. Campos exigidos que não forem identificados podem fazer o registro aparecer entre as falhas.</li>
+    <li><strong>Ajuste o desempenho, se necessário.</strong> A opção “Arquivos por lote” controla quantos PDFs são processados em paralelo. Se o navegador ficar lento, diminua esse valor; para começar, experimente de 1 a 5 arquivos por lote.</li>
+    <li><strong>Selecione os PDFs.</strong> Clique no botão de seleção de arquivos e escolha um ou mais PDFs. O processamento começa após a seleção, usando as configurações escolhidas.</li>
+    <li><strong>Acompanhe o progresso.</strong> Aguarde o término mantendo a aba aberta. PDFs com texto selecionável usam leitura nativa; documentos digitalizados podem exigir OCR e levar mais tempo.</li>
+    <li><strong>Confira e baixe os resultados.</strong> Revise os registros e use os botões de download disponíveis no resumo. Guarde os arquivos JSON antes de fechar ou recarregar a página.</li>
+  </ol></section>
+  <section aria-labelledby="saida"><h2 id="saida">Entenda os resultados</h2><ul>
+    <li><strong>Documentos válidos:</strong> registros que passaram pelas regras de validação configuradas. Confira número, data e descrição antes de importar em outro sistema.</li>
+    <li><strong>Falhas:</strong> documentos com erro de leitura ou campos que não atenderam às regras. Consulte os detalhes, revise o PDF e tente novamente com o tipo correto.</li>
+    <li><strong>Duplicados:</strong> arquivos ou registros identificados como repetidos. Confira os detalhes antes de decidir se precisa processá-los novamente.</li>
+  </ul><p>Os downloads disponíveis dependem do resultado do processamento. O JSON pode ser usado em integrações, como o FORMTRON, conforme o formato esperado pelo sistema de destino.</p></section>
+  <section aria-labelledby="links"><h2 id="links">URL base dos documentos: quando preencher?</h2><p>Na aba “Integração e links”, preencha “URL base dos documentos” somente se os PDFs já estiverem hospedados em outro endereço e o JSON precisar apontar para eles.</p><p>Exemplo: <code>https://seu-servidor.com/documentos/</code>. Termine a URL com <code>/</code>. Deixe o campo vazio para usar apenas o nome do arquivo.</p><p>Essa opção monta referências no JSON; ela não envia nem hospeda os PDFs nesse endereço.</p></section>
+  <section aria-labelledby="ajuda"><h2 id="ajuda">Se algo não funcionar</h2><h3>O navegador ficou lento ou parou de responder</h3><p>Processe menos PDFs por vez e reduza “Arquivos por lote”. O OCR depende da memória e da capacidade do seu dispositivo.</p><h3>O texto foi reconhecido incorretamente</h3><p>Use uma digitalização mais nítida, sem cortes e com as páginas na orientação correta. Confira o tipo documental selecionado. Layouts diferentes podem exigir ajustes nas regras de extração.</p><h3>O sistema ou o OCR não carregou</h3><p>Confira a conexão e recarregue a página. As bibliotecas externas precisam estar acessíveis; bloqueadores e redes restritas podem impedir o carregamento.</p><h3>O download não apareceu</h3><p>Use o botão de download no resumo dos resultados e confira a pasta de downloads do navegador.</p></section>
+  <footer><a class="button" href="extractron.html">Começar extração →</a><p>Revise os dados extraídos antes de utilizá-los. A precisão depende do conteúdo e da qualidade de cada PDF.</p></footer>
+</main>
+</body>
+</html>
