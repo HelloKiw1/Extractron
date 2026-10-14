@@ -14,7 +14,8 @@
     header{padding:40px 0 24px}h1{font-size:clamp(2rem,6vw,3.2rem);line-height:1.15;margin:12px 0}h2{line-height:1.3;font-size:1.3rem}h3{font-size:1rem}p{margin:12px 0}
     .label{color:#67e8f9;letter-spacing:.12em;font-size:.8rem;text-transform:uppercase}section{padding:20px 24px;border:1px solid #29313a;background:#151b21;border-radius:12px;margin:16px 0}
     code{overflow-wrap:anywhere;background:#232d37;padding:2px 5px;border-radius:4px}li{margin:9px 0}footer{padding:24px 0;color:#aab6c4} .muted{color:#aab6c4}
-    @media(max-width:480px){main{padding:16px}section{padding:16px}}
+    figure{margin:20px 0}figure img{display:block;width:100%;height:auto;background:#fff;border-radius:12px}figcaption{margin-top:12px;color:#aab6c4;font-size:.95rem}.visual-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;list-style:none;padding:0;margin:12px 0}.visual-steps li{margin:0;text-align:center;font-size:.9rem}.visual-steps strong{display:block;color:#67e8f9}
+    @media(max-width:480px){main{padding:16px}section{padding:16px}.visual-steps{grid-template-columns:1fr}.visual-steps li{text-align:left}}
   </style>
 </head>
 <body>
@@ -22,6 +23,10 @@
   <nav aria-label="Navegação principal"><a href="extractron.html">Extractron</a><a class="button" href="extractron.html">Abrir o sistema →</a></nav>
   <header><span class="label">Guia de uso</span><h1>Do PDF ao JSON,<br>passo a passo.</h1><p class="muted">Extraia informações de documentos administrativos usando o seu navegador. Comece com poucos arquivos para conferir os resultados.</p></header>
   <section aria-labelledby="antes"><h2 id="antes">Antes de começar</h2><p>Tenha os arquivos PDF salvos no computador e mantenha a conexão com a internet para carregar as bibliotecas e os recursos de OCR. Use um navegador atualizado.</p><p>Os PDFs são processados localmente no navegador. A hospedagem no GitHub Pages disponibiliza o sistema; os documentos selecionados não são enviados ao GitHub.</p></section>
+  <section aria-labelledby="fluxo"><span class="label">Visão geral</span><h2 id="fluxo">Como o Extractron funciona</h2>
+    <figure><img src="assets/images/fluxo-extracao.png" width="2172" height="724" alt="Uma pilha de PDFs selecionados segue para a leitura dos documentos e depois para um arquivo JSON validado, disponível para download."><figcaption>Você seleciona os PDFs; o Extractron lê o conteúdo, identifica as informações e organiza os resultados em JSON.</figcaption></figure>
+    <ol class="visual-steps"><li><strong>1. Selecionar</strong>Escolha o tipo e os PDFs.</li><li><strong>2. Extrair</strong>O navegador lê e valida os dados.</li><li><strong>3. Baixar</strong>Revise e salve o JSON.</li></ol>
+  </section>
   <section aria-labelledby="passos"><h2 id="passos">Faça a primeira extração</h2><ol>
     <li><strong>Escolha o tipo de documento.</strong> Na configuração do processamento, selecione o tipo correspondente, como lei, decreto ou portaria. Use a detecção automática se não souber o tipo ou tiver documentos variados.</li>
     <li><strong>Confira as regras de saída.</strong> Ajuste os campos obrigatórios conforme a sua necessidade. Campos exigidos que não forem identificados podem fazer o registro aparecer entre as falhas.</li>
@@ -30,6 +35,11 @@
     <li><strong>Acompanhe o progresso.</strong> Aguarde o término mantendo a aba aberta. PDFs com texto selecionável usam leitura nativa; documentos digitalizados podem exigir OCR e levar mais tempo.</li>
     <li><strong>Confira e baixe os resultados.</strong> Revise os registros e use os botões de download disponíveis no resumo. Guarde os arquivos JSON antes de fechar ou recarregar a página.</li>
   </ol></section>
+  <section aria-labelledby="ocr"><span class="label">Documentos digitalizados</span><h2 id="ocr">Quando o PDF é uma imagem, entra o OCR</h2>
+    <figure><img src="assets/images/fluxo-ocr.png" width="2172" height="724" loading="lazy" decoding="async" alt="Uma página digitalizada passa pelo reconhecimento óptico de caracteres, que identifica o texto para permitir a extração dos dados."><figcaption>O OCR reconhece os caracteres de uma página digitalizada. Depois, o texto reconhecido segue para a extração dos campos e a validação.</figcaption></figure>
+    <ol class="visual-steps"><li><strong>1. Página digitalizada</strong>O texto está dentro de uma imagem.</li><li><strong>2. Reconhecimento</strong>O OCR identifica os caracteres.</li><li><strong>3. Texto para extração</strong>O sistema procura os campos.</li></ol>
+    <p>Essa etapa é automática quando necessária e pode demorar mais que a leitura de texto nativo. Revise os resultados: a qualidade da digitalização influencia o reconhecimento.</p>
+  </section>
   <section aria-labelledby="saida"><h2 id="saida">Entenda os resultados</h2><ul>
     <li><strong>Documentos válidos:</strong> registros que passaram pelas regras de validação configuradas. Confira número, data e descrição antes de importar em outro sistema.</li>
     <li><strong>Falhas:</strong> documentos com erro de leitura ou campos que não atenderam às regras. Consulte os detalhes, revise o PDF e tente novamente com o tipo correto.</li>
